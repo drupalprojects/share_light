@@ -60,6 +60,12 @@ function share_light_menu() {
     'file' => 'includes/pages.php',
     'type' => MENU_CALLBACK,
   );
+  $items['share-via-email'] = array(
+    'page callback' => 'share_light_url_email_page',
+    'access callback' => TRUE, # TODO proper access callback
+    'file' => 'includes/pages.php',
+    'type' => MENU_CALLBACK,
+  );
   $items['node/%node/share-settings'] = array(
     'title'            => 'E-Mail share',
     'description'      => 'Configure settings for sharing this node via e-mail.',

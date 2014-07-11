@@ -62,7 +62,37 @@ function share_light_node_email_page($node) {
 
   $defaults = share_light_email_settings($node);
   drupal_set_title(token_replace($defaults['share_light_email_page_title'], array('node' => $node)));
-  $form = drupal_get_form('share_light_node_email_form', $node, $defaults);
+  $form = drupal_get_form('share_light_node_email_form', array('node' => $node), $defaults, NULL);
+  $form['#attributes']['class'][] = 'share-page';
+  return $form;
+}
+
+/**
+ * Page callback for share-via-email.
+ *
+ * Display a page specific share page.
+ */
+function share_light_url_email_page() {
+  // get url to share from GET paramter
+  // TODO verify the param or get the url from a field of the calling node
+  $url = $_GET['share'];
+
+  // Tell SEO to ignore this page (but don't generate the meta tag for an overlay)
+  if (variable_get('share_light_page_noindex', 1)) {
+    $element = array(
+      '#type' => 'html_tag',
+      '#tag' => 'meta',
+      '#attributes' => array(
+        'name' =>  'robots',
+        'content' => 'noindex, nofollow',
+      )
+    );
+    drupal_add_html_head($element, 'share_light_email_noindex');
+  }
+
+  $defaults = share_light_email_settings();
+  drupal_set_title(token_replace($defaults['share_light_email_page_title'], array('url' => NULL)));
+  $form = drupal_get_form('share_light_node_email_form', array('url' => $url), $defaults);
   $form['#attributes']['class'][] = 'share-page';
   return $form;
 }
@@ -70,13 +100,20 @@ function share_light_node_email_page($node) {
 /**
  * Form call-back: The share form.
  */
-function share_light_node_email_form($form, &$form_state, $node, $defaults) {
-  $form_state['node'] = $node;
+function share_light_node_email_form($form, &$form_state, $node_or_url, $defaults) {
+  if (array_key_exists('node', $node_or_url)) {
+    $form_state['node'] = $node_or_url['node'];
+    $tokenData = array(
+      'node' => $node_or_url['node'],
+    );
+  } elseif (array_key_exists('url', $node_or_url)) {
+    $form_state['url'] = $node_or_url['url'];
+    $tokenData = array(
+      'url' => $node_or_url['url'],
+    );
+  }
   $form_state['defaults'] = &$defaults;
 
-  $tokenData = array(
-    'node' => $node,
-  );
   $edit_message = !empty($defaults['share_light_email_message_edit']);
   
   $form['instructions'] = array(
@@ -215,7 +252,8 @@ function share_light_node_email_form_validate($form, &$form_state) {
  * Send share email
  */
 function share_light_node_email_form_submit($form, &$form_state) {
-  $node = $form_state['node'];
+  $node = isset($form_state['node']) ? $form_state['node'] : NULL;
+  $url = isset($form_state['url']) ? $form_state['url'] : NULL;
   $defaults = &$form_state['defaults'];
   $values = &$form_state['values'];
   $recipient_list = share_light_recipient_list($form_state);
@@ -228,7 +266,12 @@ function share_light_node_email_form_submit($form, &$form_state) {
   // generate name from firstname and lastname, name used in different occasions in this file
   $values['sender'] = $tokens['share']['sender'];
   $values['footer'] = token_replace($defaults['share_light_email_message_footer'], $tokens);
-  $tokens['share']['url'] = $values['url'] = url('node/' . $node->nid, $pathOptions);
+  # check if url or node
+  if ($node) {
+    $tokens['share']['url'] = $values['url'] = url('node/' . $node->nid, $pathOptions);
+  } elseif ($url) {
+    $tokens['share']['url'] = $values['url'] = $url;
+  }
 
   $message = token_replace(theme('share_light_message_body', array(
     'node' => $node,
@@ -264,6 +307,8 @@ function share_light_node_email_form_submit($form, &$form_state) {
 
   if ($redirect = variable_get('share_light_page_redirect')) {
     $form_state['redirect'] = $redirect;
+  } elseif ($url) {
+    # TODO set redirect to page which started the share action
   } else {
     $form_state['redirect'] = 'node/' . $node->nid;
     drupal_set_message('Thank you for sharing. You are awesome!');
