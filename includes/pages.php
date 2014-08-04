@@ -75,7 +75,28 @@ function share_light_node_email_page($node) {
 function share_light_url_email_page() {
   // get url to share from GET paramter
   // TODO verify the param or get the url from a field of the calling node
-  $url = $_GET['share'];
+  $nid = isset($_GET['nid']) ? $_GET['nid'] : NULL;
+  $node = node_load($nid);
+  // restrict access to sharing to possibility of viewing of shared node
+  // resp. current node if no nid= was provided
+  if (!node_access('view', $node)) {
+    drupal_access_denied();
+    return;
+  }
+  $items = field_get_items('node', $node, 'share_light');
+  // set the url
+  // if a share_light field exists on the $node
+  // and share light is enabled on this $node;
+  // report an not_found error otherwise
+  if (isset($items[0]['toggle']) && $items[0]['toggle'] == 1) {
+    if (!empty($items[0]['options']['share_url'])) {
+      $url =   $items[0]['options']['share_url'];
+    }
+    // TODO url = <front>
+  } else {
+    drupal_not_found();
+    return;
+  }
 
   // Tell SEO to ignore this page (but don't generate the meta tag for an overlay)
   if (variable_get('share_light_page_noindex', 1)) {

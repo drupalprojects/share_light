@@ -171,5 +171,17 @@ function _share_light_channel_email($url, $options, $link) {
       'query' => $query,
       'attributes' => array('title' => t('Share this via E-Mail!'))
     );
+  } else {
+    // current node == thank you page node (this is the nid we need
+    // at /share-via-email
+    if ($node = menu_get_object()) {
+      unset($query['path']);
+      return array(
+        'title' => 'E-Mail',
+        'href' => 'share-via-email',
+        'query' => array('nid' => $node->nid),
+        'attributes' => array('title' => t('Share this via E-Mail!'))
+      );
+    }
   }
 }
