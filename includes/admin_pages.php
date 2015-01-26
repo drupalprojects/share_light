@@ -1,6 +1,7 @@
 <?php
 
 require_once dirname(__FILE__) . '/pages.php';
+use \Drupal\share_light\Loader;
 
 /**
  * Menu/form callback: settings form.
@@ -18,9 +19,9 @@ function share_light_settings_form() {
   $form['share_light_channels_enabled'] = array(
     '#title' => t('Enable social media channels for sharing.'),
     '#type' => 'checkboxes',
-    '#options' => _share_light_channels(),
+    '#options' => Loader::instance()->channelOptions(),
     '#description' => t('The social media channels available for sharing.'),
-    '#default_value' => variable_get('share_light_channels_enabled', array_keys(_share_light_channels())),
+    '#default_value' => variable_get('share_light_channels_enabled', array_keys(Loader::instance()->channelOptions())),
   );
 
   return system_settings_form($form);
