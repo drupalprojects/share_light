@@ -287,6 +287,6 @@ function share_light_node_email_form_submit($form, &$form_state) {
     $form_state['redirect'] = $redirect;
   } else {
     $form_state['redirect'] = 'node/' . $node->nid;
-    drupal_set_message('Thank you for sharing. You are awesome!');
+    drupal_set_message(t('Thank you for sharing. You are awesome!'));
   }
 }
