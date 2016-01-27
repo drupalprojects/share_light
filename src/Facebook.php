@@ -9,7 +9,7 @@ class Facebook extends ChannelBase {
     return array(
       'title' => 'Facebook',
       'href' => 'https://www.facebook.com/sharer.php',
-      'query' => array('u' => urlencode($url)),
+      'query' => array('u' => ($url)),
       'attributes' => array(
         'title' => t('Share this via Facebook!'),
         'data-share' => 'facebook',
