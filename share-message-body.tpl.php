@@ -17,7 +17,7 @@
         <tr>
           <td style="font-family:Arial,Helvetica,sans-serif; font-size:12px;">
             <?php if ($values['message']): ?>
-            <p><?php print t('Message from Sender'); ?></p><p><?php print $values['message']; ?></p>
+            <p><?php print $values['message']; ?></p>
             <?php endif; ?>
             <?php echo $values['footer']; ?>
           </td>
